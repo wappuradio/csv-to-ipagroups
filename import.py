@@ -21,7 +21,7 @@ GROUP_MAPPING = {
     "Grafiikka / Graphics": "grafiikka",
 }
 # Add all users to this group
-DEFAULT_GROUP = "toimittaja"
+DEFAULT_GROUP = "toimittajat"
 
 
 class FormResponse:
