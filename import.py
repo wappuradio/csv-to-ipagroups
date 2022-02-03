@@ -122,8 +122,8 @@ def main():
 
     freeipa = ClientMeta(ipaserver)
     freeipa.login_kerberos()
-
     ipausers = get_ipausers(freeipa)
+
     matches = match_users(responses, ipausers)
 
     for match in matches:
