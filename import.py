@@ -63,6 +63,7 @@ def match_users(responses, ipausers):
         for ipauser in ipausers:
             if response.email in ipauser.get('mail', []):
                 matches.append((response, ipauser))
+                continue
             if ipauser['uid'][0] in response.nicknames:
                 matches.append((response, ipauser))
 
@@ -90,8 +91,11 @@ def main():
 
     ipausers = get_ipausers(freeipa)
     matches = match_users(responses, ipausers)
+
     for match in matches:
-        print(match[0], match[1]['uid'][0])
+        for group in match[0].groups:
+            if f"{group}-{year}" not in match[1]['memberof_group']:
+                print(f"ipa group-add-member {group}-{year} --users={match[1]['uid'][0]}")
 
 
 if __name__ == "__main__":

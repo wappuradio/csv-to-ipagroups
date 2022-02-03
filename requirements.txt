@@ -1,1 +1,5 @@
 python-freeipa==1.0.6
+requests-kerberos==0.14.0
+srvlookup==2.0.0
+gssapi==1.7.2
+requests-gssapi==1.2.3
