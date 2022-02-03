@@ -2,13 +2,13 @@ import datetime
 import sys
 import os
 import csv
-from typing import List
+from typing import List, Tuple
 from python_freeipa import ClientMeta
 
 FIRST_LINE_HAS_HEADER = True
 
 EMAIL_FIELD = 2
-NICK_FIELDS = [3, 4] # TG, IRC
+NICK_FIELDS = [3, 4]  # TG, IRC
 GROUP_FIELD = 9
 
 GROUP_MAPPING = {
@@ -16,6 +16,10 @@ GROUP_MAPPING = {
     "Grafiikka / Graphics": "grafiikka",
 }
 DEFAULT_GROUP = "toimittaja"
+
+# Type alias
+IpaUser = dict
+
 
 class FormResponse:
     email: str
@@ -31,13 +35,19 @@ class FormResponse:
         return f"<Response: {self.email}, {self.nicknames}, {self.groups}>"
 
 
-def read_csv(path: str) -> List[str]:
+def read_csv(path: str) -> List[List[str]]:
+    """
+    Take a path to a CSV file and return a list of rows (which are lists of columns)
+    """
     with open(path, 'r') as f:
         l = list(csv.reader(f))
         return l[1:] if FIRST_LINE_HAS_HEADER else l
 
 
-def parse_responses(responses: List[str]) -> List[FormResponse]:
+def parse_responses(responses: List[List[str]]) -> List[FormResponse]:
+    """
+    Take in the data decoded from the CSV file and parse the rows in the FormResponse objects
+    """
     parsed = []
     for response in responses:
         email = response[EMAIL_FIELD]
@@ -55,11 +65,17 @@ def parse_responses(responses: List[str]) -> List[FormResponse]:
     return parsed
 
 
-def get_ipausers(ipa):
+def get_ipausers(ipa) -> List[IpaUser]:
+    """
+    Get the full user listing from FreeIPA. This is expected to be much faster than to do individual queries.
+    """
     return ipa.user_find()['result']
 
 
-def match_users(responses, ipausers):
+def match_users(responses: List[FormResponse], ipausers: List[IpaUser]) -> List[Tuple[FormResponse, IpaUser]]:
+    """
+    Take form responses and FreeIPA user data, trying to find matches using either emails or nicknames
+    """
     matches = []
 
     for response in responses:
@@ -73,9 +89,10 @@ def match_users(responses, ipausers):
     return matches
 
 
-def main():
-    year = datetime.datetime.now().strftime('%Y')
-
+def parse_args() -> Tuple[str, str]:
+    """
+    Collect CLI arguments or exit if the input is invalid
+    """
     if len(sys.argv) != 3:
         print(f"Usage: {sys.argv[0]} <input.csv> <ipaserver>")
         sys.exit(1)
@@ -86,6 +103,13 @@ def main():
     if not os.path.isfile(path):
         print(f"{path} is not a file")
         sys.exit(1)
+
+    return path, ipaserver
+
+
+def main():
+    year = datetime.datetime.now().strftime('%Y')
+    path, ipaserver = parse_args()
 
     responses = parse_responses(read_csv(path))
 
