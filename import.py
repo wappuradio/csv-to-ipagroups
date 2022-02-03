@@ -10,9 +10,12 @@ FIRST_LINE_HAS_HEADER = True
 EMAIL_FIELD = 2
 NICK_FIELDS = [3, 4] # TG, IRC
 GROUP_FIELD = 9
+
 GROUP_MAPPING = {
-    "Tekniikka / Tech": "tekniikka"
+    "Tekniikka / Tech": "tekniikka",
+    "Grafiikka / Graphics": "grafiikka",
 }
+DEFAULT_GROUP = "toimittaja"
 
 class FormResponse:
     email: str
@@ -44,7 +47,7 @@ def parse_responses(responses: List[str]) -> List[FormResponse]:
                 nick = response[field].replace('@', '').lower()
                 if nick not in nicks:
                     nicks.append(nick)
-        groups = []
+        groups = [DEFAULT_GROUP]
         for group in response[GROUP_FIELD].split(';'):
             if group in GROUP_MAPPING.keys():
                 groups.append(GROUP_MAPPING[group])
