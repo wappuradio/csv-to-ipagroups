@@ -1,7 +1,9 @@
+import datetime
 import sys
 import os
 import csv
 from typing import List
+from python_freeipa import ClientMeta
 
 FIRST_LINE_HAS_HEADER = True
 
@@ -50,18 +52,46 @@ def parse_responses(responses: List[str]) -> List[FormResponse]:
     return parsed
 
 
+def get_ipausers(ipa):
+    return ipa.user_find()['result']
+
+
+def match_users(responses, ipausers):
+    matches = []
+
+    for response in responses:
+        for ipauser in ipausers:
+            if response.email in ipauser.get('mail', []):
+                matches.append((response, ipauser))
+            if ipauser['uid'][0] in response.nicknames:
+                matches.append((response, ipauser))
+
+    return matches
+
+
 def main():
-    if len(sys.argv) != 2:
-        print(f"Usage: {sys.argv[0]} <input.csv>")
+    year = datetime.datetime.now().strftime('%Y')
+
+    if len(sys.argv) != 3:
+        print(f"Usage: {sys.argv[0]} <input.csv> <ipaserver>")
         sys.exit(1)
 
     path = sys.argv[1]
+    ipaserver = sys.argv[2]
+
     if not os.path.isfile(path):
         print(f"{path} is not a file")
         sys.exit(1)
 
     responses = parse_responses(read_csv(path))
-    print(responses)
+
+    freeipa = ClientMeta(ipaserver)
+    freeipa.login_kerberos()
+
+    ipausers = get_ipausers(freeipa)
+    matches = match_users(responses, ipausers)
+    for match in matches:
+        print(match[0], match[1]['uid'][0])
 
 
 if __name__ == "__main__":
