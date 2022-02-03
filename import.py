@@ -5,20 +5,23 @@ import csv
 from typing import List, Tuple
 from python_freeipa import ClientMeta
 
+# CSV format
+# <date>,<name>,<email>,<tg>,<irc>,...,GROUP1;GROUP2;GROUP3,...
+
 FIRST_LINE_HAS_HEADER = True
 
+# Field indices
 EMAIL_FIELD = 2
 NICK_FIELDS = [3, 4]  # TG, IRC
 GROUP_FIELD = 9
 
+# CSV "group" to FreeIPA group prefix map
 GROUP_MAPPING = {
     "Tekniikka / Tech": "tekniikka",
     "Grafiikka / Graphics": "grafiikka",
 }
+# Add all users to this group
 DEFAULT_GROUP = "toimittaja"
-
-# Type alias
-IpaUser = dict
 
 
 class FormResponse:
@@ -63,6 +66,10 @@ def parse_responses(responses: List[List[str]]) -> List[FormResponse]:
                 groups.append(GROUP_MAPPING[group])
         parsed.append(FormResponse(email=email, nicknames=nicks, groups=groups))
     return parsed
+
+
+# Type alias
+IpaUser = dict
 
 
 def get_ipausers(ipa) -> List[IpaUser]:

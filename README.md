@@ -13,6 +13,10 @@ pip install --upgrade pip  # required or some dependencies will likely fail to i
 pip install -r requirements.txt
 ```
 
+## Configuration
+
+For varying CSV field configurations see the beginning of import.py
+
 ## Usage
 
 You need to have valid FreeIPA kerberos credentials. Use `kinit` on a domain joined host to get a ticket.
